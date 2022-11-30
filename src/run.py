@@ -5,6 +5,14 @@ import numpy as np
 import seaborn as sns
 import streamlit as st
 from PIL import Image
+import os
+
+import sys
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+from db.models import Message
 
 
 # Login
@@ -36,20 +44,22 @@ banner = Image.open('./data/banner.webp', )
 st.image(banner)
 st.title(':zap: Pytopia Dashboard')
 
-# Metrics
-col1, col2 = st.columns(2)
-col1.metric(label="Pytopia Telegram Members", value="4800", delta="+100")
-col2.metric(label="Pytopia Website Members", value="2102", delta="+10")
+# Questions
+with st.expander('Q / A'):
+    query = st.text_input('Search:')
 
-# Statistics
-with st.expander('Statistics'):
-    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    sns.histplot(np.random.randn(100), ax=ax)
-    st.pyplot(fig)
+    # select top 10 from messages
+    for msg in Message.objects.all().order_by('-date'):
+        if not msg.text or msg.text[-1] not in '؟?':
+            continue
 
-# User Info
-with st.expander('User Profile:'):
+        if query and query not in msg.text:
+            continue
+
+        col1, col2 = st.columns([1, 4])
+        col1.write(f'**{msg.user.username}**')
+        col2.write(msg.text.replace(query, f'**{query}**'))
+
     col1, col2 = st.columns(2)
-    col1.text_input('Name:')
-    col2.text_input('Location:')
-    st.camera_input('Camera Input', key='camera_input')
+    col1.button('< Previous')
+    col2.button('Next >')
