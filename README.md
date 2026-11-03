@@ -23,3 +23,4 @@ Then, you can run the dashboard by running the following command:
 ```
 streamlit run src/app.py
 ```
+# How to improve
